@@ -1,4 +1,6 @@
 import { spawnSync } from 'child_process'
+import * as dotenv from 'dotenv'
+dotenv.config()
 
 export function run(cmd: string, opts: { allowFail?: boolean } = {}): string {
   const result = spawnSync(cmd, { shell: true, encoding: 'utf-8' })
