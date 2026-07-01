@@ -11,7 +11,7 @@ const GITHUB_TOKEN = process.env.GITHUB_TOKEN
 const IS_CI = process.env.CI === 'true'
 
 function createBranch(): string {
-  const date = new Date().toISOString().split('T')[0]
+  const date = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)
   const branch = `schema-sync/${date}`
   if (IS_CI) {
     run('git config user.email "github-actions[bot]@users.noreply.github.com"')
