@@ -1,12 +1,19 @@
+import * as dotenv from 'dotenv'
+dotenv.config()
+
 import { generateSchemas, detectDrift, getChangedFiles, run } from './sync-schema'
 
 const SLACK_WEBHOOK_URL = process.env.SLACK_WEBHOOK_URL
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN
+const IS_CI = process.env.CI === 'true'
 
 function createBranch(): string {
   const date = new Date().toISOString().split('T')[0]
   const branch = `schema-sync/${date}`
-  run('git config user.email "github-actions[bot]@users.noreply.github.com"')
-  run('git config user.name "github-actions[bot]"')
+  if (IS_CI) {
+    run('git config user.email "github-actions[bot]@users.noreply.github.com"')
+    run('git config user.name "github-actions[bot]"')
+  }
   run(`git checkout -b ${branch}`)
   return branch
 }
@@ -14,7 +21,13 @@ function createBranch(): string {
 function commitAndPush(branch: string): void {
   run('git add framework/api/schema/')
   run('git commit -m "chore: sync schema from swagger"')
-  run(`git push origin ${branch}`)
+  if (GITHUB_TOKEN && !IS_CI) {
+    const remoteUrl = run('git remote get-url origin')
+    const authedUrl = remoteUrl.replace('https://', `https://x-access-token:${GITHUB_TOKEN}@`)
+    run(`git push "${authedUrl}" ${branch}`)
+  } else {
+    run(`git push origin ${branch}`)
+  }
 }
 
 function createPullRequest(branch: string, changedFiles: string[]): string {
@@ -37,22 +50,42 @@ function createPullRequest(branch: string, changedFiles: string[]): string {
 async function notifySlack(prUrl: string, changedFiles: string[]): Promise<void> {
   if (!SLACK_WEBHOOK_URL) return
 
+  const timestamp = new Date().toISOString()
+  const swaggerUrl = process.env.SWAGGER_URL || 'http://localhost:3001/openapi.json'
+  const apiName = new URL(swaggerUrl).hostname
+
   const payload = {
     text: '*Schema drift detected*',
     blocks: [
       {
+        type: 'header',
+        text: { type: 'plain_text', text: ':warning: Schema Drift Detected' },
+      },
+      { type: 'divider' },
+      {
         type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: `*Schema drift detected* — ${changedFiles.length} file(s) changed.\n<${prUrl}|View PR>`,
-        },
+        fields: [
+          { type: 'mrkdwn', text: `*API*\n${apiName}` },
+          { type: 'mrkdwn', text: `*Timestamp*\n${timestamp}` },
+        ],
       },
       {
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: changedFiles.map((f) => `• \`${f}\``).join('\n'),
+          text: `*Changed files (${changedFiles.length})*\n${changedFiles.map((f) => `• \`${f}\``).join('\n')}`,
         },
+      },
+      {
+        type: 'actions',
+        elements: [
+          {
+            type: 'button',
+            text: { type: 'plain_text', text: 'View PR' },
+            url: prUrl,
+            style: 'primary',
+          },
+        ],
       },
     ],
   }
