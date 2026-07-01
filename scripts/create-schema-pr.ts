@@ -22,7 +22,7 @@ function createBranch(): string {
 }
 
 function commitAndPush(branch: string): void {
-  run('git add framework/api/schema/')
+  run('git add framework/api/schema/ framework/api/payload/')
   run('git commit -m "chore: sync schema from swagger"')
   if (GITHUB_TOKEN && !IS_CI) {
     const remoteUrl = run('git remote get-url origin')

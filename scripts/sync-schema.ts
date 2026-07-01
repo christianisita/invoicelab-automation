@@ -19,11 +19,11 @@ export function generateSchemas(): void {
 }
 
 export function detectDrift(): string {
-  return run('git diff -- framework/api/schema/', { allowFail: true })
+  return run('git diff -- framework/api/schema/ framework/api/payload/', { allowFail: true })
 }
 
 export function getChangedFiles(): string[] {
-  const output = run('git diff --name-only -- framework/api/schema/', { allowFail: true })
+  const output = run('git diff --name-only -- framework/api/schema/ framework/api/payload/', { allowFail: true })
   return output ? output.split('\n').filter(Boolean) : []
 }
 
