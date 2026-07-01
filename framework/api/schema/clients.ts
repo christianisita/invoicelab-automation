@@ -16,6 +16,7 @@ export const GetClientsResponseItem = zod.object({
   "id": zod.number().optional(),
   "name": zod.string().optional(),
   "email": zod.string().email().optional(),
+  "phone": zod.string().nullish(),
   "address": zod.string().nullish(),
   "created_at": zod.string().datetime({"offset":true}).optional()
 })
@@ -30,6 +31,7 @@ export const GetClientsResponse = zod.array(GetClientsResponseItem)
 export const PostClientsBody = zod.object({
   "name": zod.string().min(1),
   "email": zod.string().email(),
+  "phone": zod.string().optional(),
   "address": zod.string().optional()
 })
 
@@ -37,6 +39,7 @@ export const PostClientsResponse = zod.object({
   "id": zod.number().optional(),
   "name": zod.string().optional(),
   "email": zod.string().email().optional(),
+  "phone": zod.string().nullish(),
   "address": zod.string().nullish(),
   "created_at": zod.string().datetime({"offset":true}).optional()
 })
@@ -52,6 +55,7 @@ export const GetClientsIdResponse = zod.object({
   "id": zod.number().optional(),
   "name": zod.string().optional(),
   "email": zod.string().email().optional(),
+  "phone": zod.string().nullish(),
   "address": zod.string().nullish(),
   "created_at": zod.string().datetime({"offset":true}).optional()
 })
@@ -69,6 +73,7 @@ export const PutClientsIdParams = zod.object({
 export const PutClientsIdBody = zod.object({
   "name": zod.string().min(1),
   "email": zod.string().email(),
+  "phone": zod.string().optional(),
   "address": zod.string().optional()
 })
 
@@ -76,6 +81,7 @@ export const PutClientsIdResponse = zod.object({
   "id": zod.number().optional(),
   "name": zod.string().optional(),
   "email": zod.string().email().optional(),
+  "phone": zod.string().nullish(),
   "address": zod.string().nullish(),
   "created_at": zod.string().datetime({"offset":true}).optional()
 })
