@@ -15,6 +15,9 @@ import * as zod from 'zod';
 export const getInvoicesResponseCurrencyMin = 3;
 export const getInvoicesResponseCurrencyMax = 3;
 
+export const getInvoicesResponseTaxRateMin = 0;
+export const getInvoicesResponseTaxRateMax = 100;
+
 
 
 export const GetInvoicesResponseItem = zod.object({
@@ -25,8 +28,8 @@ export const GetInvoicesResponseItem = zod.object({
   "currency": zod.string().min(getInvoicesResponseCurrencyMin).max(getInvoicesResponseCurrencyMax).optional().describe('ISO 4217 currency code'),
   "issue_date": zod.string().date().optional(),
   "due_date": zod.string().date().optional(),
-  "tax_rate": zod.number().optional(),
-  "notes": zod.string().nullish(),
+  "tax_rate": zod.number().min(getInvoicesResponseTaxRateMin).max(getInvoicesResponseTaxRateMax).optional(),
+  "memo": zod.string().nullish(),
   "subtotal": zod.number().optional(),
   "created_at": zod.string().datetime({"offset":true}).optional(),
   "updated_at": zod.string().datetime({"offset":true}).optional()
@@ -58,7 +61,7 @@ export const PostInvoicesBody = zod.object({
   "issue_date": zod.string().date(),
   "due_date": zod.string().date(),
   "tax_rate": zod.number().min(postInvoicesBodyTaxRateMin).max(postInvoicesBodyTaxRateMax).default(postInvoicesBodyTaxRateDefault),
-  "notes": zod.string().optional(),
+  "memo": zod.string().optional(),
   "line_items": zod.array(zod.object({
   "description": zod.string().min(1),
   "quantity": zod.number().min(1),
@@ -68,6 +71,9 @@ export const PostInvoicesBody = zod.object({
 
 export const postInvoicesResponseCurrencyMin = 3;
 export const postInvoicesResponseCurrencyMax = 3;
+
+export const postInvoicesResponseTaxRateMin = 0;
+export const postInvoicesResponseTaxRateMax = 100;
 
 
 
@@ -79,8 +85,8 @@ export const PostInvoicesResponse = zod.object({
   "currency": zod.string().min(postInvoicesResponseCurrencyMin).max(postInvoicesResponseCurrencyMax).optional().describe('ISO 4217 currency code'),
   "issue_date": zod.string().date().optional(),
   "due_date": zod.string().date().optional(),
-  "tax_rate": zod.number().optional(),
-  "notes": zod.string().nullish(),
+  "tax_rate": zod.number().min(postInvoicesResponseTaxRateMin).max(postInvoicesResponseTaxRateMax).optional(),
+  "memo": zod.string().nullish(),
   "subtotal": zod.number().optional(),
   "created_at": zod.string().datetime({"offset":true}).optional(),
   "updated_at": zod.string().datetime({"offset":true}).optional()
@@ -96,6 +102,9 @@ export const GetInvoicesIdParams = zod.object({
 export const getInvoicesIdResponseOneCurrencyMin = 3;
 export const getInvoicesIdResponseOneCurrencyMax = 3;
 
+export const getInvoicesIdResponseOneTaxRateMin = 0;
+export const getInvoicesIdResponseOneTaxRateMax = 100;
+
 
 
 
@@ -107,8 +116,8 @@ export const GetInvoicesIdResponse = zod.object({
   "currency": zod.string().min(getInvoicesIdResponseOneCurrencyMin).max(getInvoicesIdResponseOneCurrencyMax).optional().describe('ISO 4217 currency code'),
   "issue_date": zod.string().date().optional(),
   "due_date": zod.string().date().optional(),
-  "tax_rate": zod.number().optional(),
-  "notes": zod.string().nullish(),
+  "tax_rate": zod.number().min(getInvoicesIdResponseOneTaxRateMin).max(getInvoicesIdResponseOneTaxRateMax).optional(),
+  "memo": zod.string().nullish(),
   "subtotal": zod.number().optional(),
   "created_at": zod.string().datetime({"offset":true}).optional(),
   "updated_at": zod.string().datetime({"offset":true}).optional()
@@ -151,7 +160,7 @@ export const PutInvoicesIdBody = zod.object({
   "issue_date": zod.string().date(),
   "due_date": zod.string().date(),
   "tax_rate": zod.number().min(putInvoicesIdBodyTaxRateMin).max(putInvoicesIdBodyTaxRateMax).default(putInvoicesIdBodyTaxRateDefault),
-  "notes": zod.string().optional(),
+  "memo": zod.string().optional(),
   "line_items": zod.array(zod.object({
   "description": zod.string().min(1),
   "quantity": zod.number().min(1),
@@ -161,6 +170,9 @@ export const PutInvoicesIdBody = zod.object({
 
 export const putInvoicesIdResponseCurrencyMin = 3;
 export const putInvoicesIdResponseCurrencyMax = 3;
+
+export const putInvoicesIdResponseTaxRateMin = 0;
+export const putInvoicesIdResponseTaxRateMax = 100;
 
 
 
@@ -172,8 +184,8 @@ export const PutInvoicesIdResponse = zod.object({
   "currency": zod.string().min(putInvoicesIdResponseCurrencyMin).max(putInvoicesIdResponseCurrencyMax).optional().describe('ISO 4217 currency code'),
   "issue_date": zod.string().date().optional(),
   "due_date": zod.string().date().optional(),
-  "tax_rate": zod.number().optional(),
-  "notes": zod.string().nullish(),
+  "tax_rate": zod.number().min(putInvoicesIdResponseTaxRateMin).max(putInvoicesIdResponseTaxRateMax).optional(),
+  "memo": zod.string().nullish(),
   "subtotal": zod.number().optional(),
   "created_at": zod.string().datetime({"offset":true}).optional(),
   "updated_at": zod.string().datetime({"offset":true}).optional()
@@ -196,9 +208,14 @@ export const GetInvoicesIdSummaryParams = zod.object({
   "id": zod.number()
 })
 
+export const getInvoicesIdSummaryResponseTaxRateMin = 0;
+export const getInvoicesIdSummaryResponseTaxRateMax = 100;
+
+
+
 export const GetInvoicesIdSummaryResponse = zod.object({
   "subtotal": zod.number().optional(),
-  "tax_rate": zod.number().optional(),
+  "tax_rate": zod.number().min(getInvoicesIdSummaryResponseTaxRateMin).max(getInvoicesIdSummaryResponseTaxRateMax).optional(),
   "tax_amount": zod.number().optional(),
   "total": zod.number().optional()
 })
@@ -218,6 +235,9 @@ export const PatchInvoicesIdStatusBody = zod.object({
 export const patchInvoicesIdStatusResponseCurrencyMin = 3;
 export const patchInvoicesIdStatusResponseCurrencyMax = 3;
 
+export const patchInvoicesIdStatusResponseTaxRateMin = 0;
+export const patchInvoicesIdStatusResponseTaxRateMax = 100;
+
 
 
 export const PatchInvoicesIdStatusResponse = zod.object({
@@ -228,8 +248,8 @@ export const PatchInvoicesIdStatusResponse = zod.object({
   "currency": zod.string().min(patchInvoicesIdStatusResponseCurrencyMin).max(patchInvoicesIdStatusResponseCurrencyMax).optional().describe('ISO 4217 currency code'),
   "issue_date": zod.string().date().optional(),
   "due_date": zod.string().date().optional(),
-  "tax_rate": zod.number().optional(),
-  "notes": zod.string().nullish(),
+  "tax_rate": zod.number().min(patchInvoicesIdStatusResponseTaxRateMin).max(patchInvoicesIdStatusResponseTaxRateMax).optional(),
+  "memo": zod.string().nullish(),
   "subtotal": zod.number().optional(),
   "created_at": zod.string().datetime({"offset":true}).optional(),
   "updated_at": zod.string().datetime({"offset":true}).optional()
