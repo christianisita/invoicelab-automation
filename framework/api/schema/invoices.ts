@@ -10,17 +10,41 @@ import * as zod from 'zod';
 
 
 /**
+ * Returns total invoice count broken down by status, total revenue from paid invoices, and outstanding amount from sent invoices.
+ * @summary Aggregate invoice statistics
+ */
+export const GetInvoicesStatsResponse = zod.object({
+  "total_invoices": zod.number().optional(),
+  "by_status": zod.object({
+  "draft": zod.number().optional(),
+  "sent": zod.number().optional(),
+  "paid": zod.number().optional()
+}).optional(),
+  "total_revenue": zod.number().optional().describe('Sum of subtotals for paid invoices'),
+  "outstanding": zod.number().optional().describe('Sum of subtotals for sent (unpaid) invoices')
+})
+
+/**
  * @summary List all invoices
  */
+export const getInvoicesResponseCurrencyMin = 3;
+export const getInvoicesResponseCurrencyMax = 3;
+
+export const getInvoicesResponseTaxRateMin = 0;
+export const getInvoicesResponseTaxRateMax = 100;
+
+
+
 export const GetInvoicesResponseItem = zod.object({
   "id": zod.number().optional(),
   "client_id": zod.number().optional(),
   "client_name": zod.string().optional(),
   "status": zod.enum(['draft', 'sent', 'paid']).optional(),
+  "currency": zod.string().min(getInvoicesResponseCurrencyMin).max(getInvoicesResponseCurrencyMax).optional().describe('ISO 4217 currency code'),
   "issue_date": zod.string().date().optional(),
   "due_date": zod.string().date().optional(),
-  "tax_rate": zod.number().optional(),
-  "notes": zod.string().nullish(),
+  "tax_rate": zod.number().min(getInvoicesResponseTaxRateMin).max(getInvoicesResponseTaxRateMax).optional(),
+  "memo": zod.string().nullish(),
   "subtotal": zod.number().optional(),
   "created_at": zod.string().datetime({"offset":true}).optional(),
   "updated_at": zod.string().datetime({"offset":true}).optional()
@@ -31,12 +55,15 @@ export const GetInvoicesResponse = zod.array(GetInvoicesResponseItem)
  * Creates invoice and all line items in a single transaction. Status starts as `draft`.
  * @summary Create an invoice with line items
  */
+export const postInvoicesBodyCurrencyDefault = `USD`;
+export const postInvoicesBodyCurrencyMin = 3;
+export const postInvoicesBodyCurrencyMax = 3;
+
 export const postInvoicesBodyTaxRateDefault = 0;
 export const postInvoicesBodyTaxRateMin = 0;
 export const postInvoicesBodyTaxRateMax = 100;
 
 
-export const postInvoicesBodyLineItemsItemQuantityExclusiveMin = 0;
 
 export const postInvoicesBodyLineItemsItemUnitPriceMin = 0;
 
@@ -45,26 +72,36 @@ export const postInvoicesBodyLineItemsItemUnitPriceMin = 0;
 
 export const PostInvoicesBody = zod.object({
   "client_id": zod.number(),
+  "currency": zod.string().min(postInvoicesBodyCurrencyMin).max(postInvoicesBodyCurrencyMax).default(postInvoicesBodyCurrencyDefault).describe('ISO 4217 currency code'),
   "issue_date": zod.string().date(),
   "due_date": zod.string().date(),
   "tax_rate": zod.number().min(postInvoicesBodyTaxRateMin).max(postInvoicesBodyTaxRateMax).default(postInvoicesBodyTaxRateDefault),
-  "notes": zod.string().optional(),
+  "memo": zod.string().optional(),
   "line_items": zod.array(zod.object({
   "description": zod.string().min(1),
-  "quantity": zod.number().gt(postInvoicesBodyLineItemsItemQuantityExclusiveMin),
-  "unit_price": zod.number().min(postInvoicesBodyLineItemsItemUnitPriceMin)
+  "quantity": zod.number().min(1),
+  "unitPrice": zod.number().min(postInvoicesBodyLineItemsItemUnitPriceMin)
 })).min(1)
 })
+
+export const postInvoicesResponseCurrencyMin = 3;
+export const postInvoicesResponseCurrencyMax = 3;
+
+export const postInvoicesResponseTaxRateMin = 0;
+export const postInvoicesResponseTaxRateMax = 100;
+
+
 
 export const PostInvoicesResponse = zod.object({
   "id": zod.number().optional(),
   "client_id": zod.number().optional(),
   "client_name": zod.string().optional(),
   "status": zod.enum(['draft', 'sent', 'paid']).optional(),
+  "currency": zod.string().min(postInvoicesResponseCurrencyMin).max(postInvoicesResponseCurrencyMax).optional().describe('ISO 4217 currency code'),
   "issue_date": zod.string().date().optional(),
   "due_date": zod.string().date().optional(),
-  "tax_rate": zod.number().optional(),
-  "notes": zod.string().nullish(),
+  "tax_rate": zod.number().min(postInvoicesResponseTaxRateMin).max(postInvoicesResponseTaxRateMax).optional(),
+  "memo": zod.string().nullish(),
   "subtotal": zod.number().optional(),
   "created_at": zod.string().datetime({"offset":true}).optional(),
   "updated_at": zod.string().datetime({"offset":true}).optional()
@@ -77,15 +114,25 @@ export const GetInvoicesIdParams = zod.object({
   "id": zod.number()
 })
 
+export const getInvoicesIdResponseOneCurrencyMin = 3;
+export const getInvoicesIdResponseOneCurrencyMax = 3;
+
+export const getInvoicesIdResponseOneTaxRateMin = 0;
+export const getInvoicesIdResponseOneTaxRateMax = 100;
+
+
+
+
 export const GetInvoicesIdResponse = zod.object({
   "id": zod.number().optional(),
   "client_id": zod.number().optional(),
   "client_name": zod.string().optional(),
   "status": zod.enum(['draft', 'sent', 'paid']).optional(),
+  "currency": zod.string().min(getInvoicesIdResponseOneCurrencyMin).max(getInvoicesIdResponseOneCurrencyMax).optional().describe('ISO 4217 currency code'),
   "issue_date": zod.string().date().optional(),
   "due_date": zod.string().date().optional(),
-  "tax_rate": zod.number().optional(),
-  "notes": zod.string().nullish(),
+  "tax_rate": zod.number().min(getInvoicesIdResponseOneTaxRateMin).max(getInvoicesIdResponseOneTaxRateMax).optional(),
+  "memo": zod.string().nullish(),
   "subtotal": zod.number().optional(),
   "created_at": zod.string().datetime({"offset":true}).optional(),
   "updated_at": zod.string().datetime({"offset":true}).optional()
@@ -94,7 +141,7 @@ export const GetInvoicesIdResponse = zod.object({
   "id": zod.number().optional(),
   "invoice_id": zod.number().optional(),
   "description": zod.string().optional(),
-  "quantity": zod.number().optional(),
+  "quantity": zod.number().min(1).optional(),
   "unit_price": zod.number().optional()
 })).optional()
 }))
@@ -107,12 +154,15 @@ export const PutInvoicesIdParams = zod.object({
   "id": zod.number()
 })
 
+export const putInvoicesIdBodyCurrencyDefault = `USD`;
+export const putInvoicesIdBodyCurrencyMin = 3;
+export const putInvoicesIdBodyCurrencyMax = 3;
+
 export const putInvoicesIdBodyTaxRateDefault = 0;
 export const putInvoicesIdBodyTaxRateMin = 0;
 export const putInvoicesIdBodyTaxRateMax = 100;
 
 
-export const putInvoicesIdBodyLineItemsItemQuantityExclusiveMin = 0;
 
 export const putInvoicesIdBodyLineItemsItemUnitPriceMin = 0;
 
@@ -121,26 +171,36 @@ export const putInvoicesIdBodyLineItemsItemUnitPriceMin = 0;
 
 export const PutInvoicesIdBody = zod.object({
   "client_id": zod.number(),
+  "currency": zod.string().min(putInvoicesIdBodyCurrencyMin).max(putInvoicesIdBodyCurrencyMax).default(putInvoicesIdBodyCurrencyDefault).describe('ISO 4217 currency code'),
   "issue_date": zod.string().date(),
   "due_date": zod.string().date(),
   "tax_rate": zod.number().min(putInvoicesIdBodyTaxRateMin).max(putInvoicesIdBodyTaxRateMax).default(putInvoicesIdBodyTaxRateDefault),
-  "notes": zod.string().optional(),
+  "memo": zod.string().optional(),
   "line_items": zod.array(zod.object({
   "description": zod.string().min(1),
-  "quantity": zod.number().gt(putInvoicesIdBodyLineItemsItemQuantityExclusiveMin),
-  "unit_price": zod.number().min(putInvoicesIdBodyLineItemsItemUnitPriceMin)
+  "quantity": zod.number().min(1),
+  "unitPrice": zod.number().min(putInvoicesIdBodyLineItemsItemUnitPriceMin)
 })).min(1)
 })
+
+export const putInvoicesIdResponseCurrencyMin = 3;
+export const putInvoicesIdResponseCurrencyMax = 3;
+
+export const putInvoicesIdResponseTaxRateMin = 0;
+export const putInvoicesIdResponseTaxRateMax = 100;
+
+
 
 export const PutInvoicesIdResponse = zod.object({
   "id": zod.number().optional(),
   "client_id": zod.number().optional(),
   "client_name": zod.string().optional(),
   "status": zod.enum(['draft', 'sent', 'paid']).optional(),
+  "currency": zod.string().min(putInvoicesIdResponseCurrencyMin).max(putInvoicesIdResponseCurrencyMax).optional().describe('ISO 4217 currency code'),
   "issue_date": zod.string().date().optional(),
   "due_date": zod.string().date().optional(),
-  "tax_rate": zod.number().optional(),
-  "notes": zod.string().nullish(),
+  "tax_rate": zod.number().min(putInvoicesIdResponseTaxRateMin).max(putInvoicesIdResponseTaxRateMax).optional(),
+  "memo": zod.string().nullish(),
   "subtotal": zod.number().optional(),
   "created_at": zod.string().datetime({"offset":true}).optional(),
   "updated_at": zod.string().datetime({"offset":true}).optional()
@@ -163,9 +223,14 @@ export const GetInvoicesIdSummaryParams = zod.object({
   "id": zod.number()
 })
 
+export const getInvoicesIdSummaryResponseTaxRateMin = 0;
+export const getInvoicesIdSummaryResponseTaxRateMax = 100;
+
+
+
 export const GetInvoicesIdSummaryResponse = zod.object({
   "subtotal": zod.number().optional(),
-  "tax_rate": zod.number().optional(),
+  "tax_rate": zod.number().min(getInvoicesIdSummaryResponseTaxRateMin).max(getInvoicesIdSummaryResponseTaxRateMax).optional(),
   "tax_amount": zod.number().optional(),
   "total": zod.number().optional()
 })
@@ -182,21 +247,95 @@ export const PatchInvoicesIdStatusBody = zod.object({
   "status": zod.enum(['draft', 'sent', 'paid'])
 })
 
+export const patchInvoicesIdStatusResponseCurrencyMin = 3;
+export const patchInvoicesIdStatusResponseCurrencyMax = 3;
+
+export const patchInvoicesIdStatusResponseTaxRateMin = 0;
+export const patchInvoicesIdStatusResponseTaxRateMax = 100;
+
+
+
 export const PatchInvoicesIdStatusResponse = zod.object({
   "id": zod.number().optional(),
   "client_id": zod.number().optional(),
   "client_name": zod.string().optional(),
   "status": zod.enum(['draft', 'sent', 'paid']).optional(),
+  "currency": zod.string().min(patchInvoicesIdStatusResponseCurrencyMin).max(patchInvoicesIdStatusResponseCurrencyMax).optional().describe('ISO 4217 currency code'),
   "issue_date": zod.string().date().optional(),
   "due_date": zod.string().date().optional(),
-  "tax_rate": zod.number().optional(),
-  "notes": zod.string().nullish(),
+  "tax_rate": zod.number().min(patchInvoicesIdStatusResponseTaxRateMin).max(patchInvoicesIdStatusResponseTaxRateMax).optional(),
+  "memo": zod.string().nullish(),
   "subtotal": zod.number().optional(),
   "created_at": zod.string().datetime({"offset":true}).optional(),
   "updated_at": zod.string().datetime({"offset":true}).optional()
 })
 
+/**
+ * Copies all invoice fields and line items into a new invoice with status `draft`. Useful for recurring invoices.
+ * @summary Duplicate an invoice as a new draft
+ */
+export const PostInvoicesIdDuplicateParams = zod.object({
+  "id": zod.number()
+})
+
+export const postInvoicesIdDuplicateResponseCurrencyMin = 3;
+export const postInvoicesIdDuplicateResponseCurrencyMax = 3;
+
+export const postInvoicesIdDuplicateResponseTaxRateMin = 0;
+export const postInvoicesIdDuplicateResponseTaxRateMax = 100;
+
+
+
+export const PostInvoicesIdDuplicateResponse = zod.object({
+  "id": zod.number().optional(),
+  "client_id": zod.number().optional(),
+  "client_name": zod.string().optional(),
+  "status": zod.enum(['draft', 'sent', 'paid']).optional(),
+  "currency": zod.string().min(postInvoicesIdDuplicateResponseCurrencyMin).max(postInvoicesIdDuplicateResponseCurrencyMax).optional().describe('ISO 4217 currency code'),
+  "issue_date": zod.string().date().optional(),
+  "due_date": zod.string().date().optional(),
+  "tax_rate": zod.number().min(postInvoicesIdDuplicateResponseTaxRateMin).max(postInvoicesIdDuplicateResponseTaxRateMax).optional(),
+  "memo": zod.string().nullish(),
+  "subtotal": zod.number().optional(),
+  "created_at": zod.string().datetime({"offset":true}).optional(),
+  "updated_at": zod.string().datetime({"offset":true}).optional()
+})
+
+/**
+ * Deletes existing line items and inserts the new set in a transaction. Only allowed while status is `draft`.
+ * @summary Replace all line items on a draft invoice
+ */
+export const PutInvoicesIdLineItemsParams = zod.object({
+  "id": zod.number()
+})
+
+
+
+export const putInvoicesIdLineItemsBodyUnitPriceMin = 0;
+
+
+
+export const PutInvoicesIdLineItemsBodyItem = zod.object({
+  "description": zod.string().min(1),
+  "quantity": zod.number().min(1),
+  "unitPrice": zod.number().min(putInvoicesIdLineItemsBodyUnitPriceMin)
+})
+export const PutInvoicesIdLineItemsBody = zod.array(PutInvoicesIdLineItemsBodyItem).min(1)
+
+
+
+
+export const PutInvoicesIdLineItemsResponseItem = zod.object({
+  "id": zod.number().optional(),
+  "invoice_id": zod.number().optional(),
+  "description": zod.string().optional(),
+  "quantity": zod.number().min(1).optional(),
+  "unit_price": zod.number().optional()
+})
+export const PutInvoicesIdLineItemsResponse = zod.array(PutInvoicesIdLineItemsResponseItem)
+
 // Inferred TypeScript types
+export type GetInvoicesStatsResponse = zod.infer<typeof GetInvoicesStatsResponse>
 export type GetInvoicesResponseItem = zod.infer<typeof GetInvoicesResponseItem>
 export type GetInvoicesResponse = zod.infer<typeof GetInvoicesResponse>
 export type PostInvoicesBody = zod.infer<typeof PostInvoicesBody>
@@ -213,3 +352,10 @@ export type GetInvoicesIdSummaryResponse = zod.infer<typeof GetInvoicesIdSummary
 export type PatchInvoicesIdStatusParams = zod.infer<typeof PatchInvoicesIdStatusParams>
 export type PatchInvoicesIdStatusBody = zod.infer<typeof PatchInvoicesIdStatusBody>
 export type PatchInvoicesIdStatusResponse = zod.infer<typeof PatchInvoicesIdStatusResponse>
+export type PostInvoicesIdDuplicateParams = zod.infer<typeof PostInvoicesIdDuplicateParams>
+export type PostInvoicesIdDuplicateResponse = zod.infer<typeof PostInvoicesIdDuplicateResponse>
+export type PutInvoicesIdLineItemsParams = zod.infer<typeof PutInvoicesIdLineItemsParams>
+export type PutInvoicesIdLineItemsBodyItem = zod.infer<typeof PutInvoicesIdLineItemsBodyItem>
+export type PutInvoicesIdLineItemsBody = zod.infer<typeof PutInvoicesIdLineItemsBody>
+export type PutInvoicesIdLineItemsResponseItem = zod.infer<typeof PutInvoicesIdLineItemsResponseItem>
+export type PutInvoicesIdLineItemsResponse = zod.infer<typeof PutInvoicesIdLineItemsResponse>

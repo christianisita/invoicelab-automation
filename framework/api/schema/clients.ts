@@ -16,6 +16,7 @@ export const GetClientsResponseItem = zod.object({
   "id": zod.number().optional(),
   "name": zod.string().optional(),
   "email": zod.string().email().optional(),
+  "phone": zod.string().nullish(),
   "address": zod.string().nullish(),
   "created_at": zod.string().datetime({"offset":true}).optional()
 })
@@ -30,6 +31,7 @@ export const GetClientsResponse = zod.array(GetClientsResponseItem)
 export const PostClientsBody = zod.object({
   "name": zod.string().min(1),
   "email": zod.string().email(),
+  "phone": zod.string().optional(),
   "address": zod.string().optional()
 })
 
@@ -37,6 +39,7 @@ export const PostClientsResponse = zod.object({
   "id": zod.number().optional(),
   "name": zod.string().optional(),
   "email": zod.string().email().optional(),
+  "phone": zod.string().nullish(),
   "address": zod.string().nullish(),
   "created_at": zod.string().datetime({"offset":true}).optional()
 })
@@ -52,6 +55,7 @@ export const GetClientsIdResponse = zod.object({
   "id": zod.number().optional(),
   "name": zod.string().optional(),
   "email": zod.string().email().optional(),
+  "phone": zod.string().nullish(),
   "address": zod.string().nullish(),
   "created_at": zod.string().datetime({"offset":true}).optional()
 })
@@ -69,6 +73,7 @@ export const PutClientsIdParams = zod.object({
 export const PutClientsIdBody = zod.object({
   "name": zod.string().min(1),
   "email": zod.string().email(),
+  "phone": zod.string().optional(),
   "address": zod.string().optional()
 })
 
@@ -76,6 +81,7 @@ export const PutClientsIdResponse = zod.object({
   "id": zod.number().optional(),
   "name": zod.string().optional(),
   "email": zod.string().email().optional(),
+  "phone": zod.string().nullish(),
   "address": zod.string().nullish(),
   "created_at": zod.string().datetime({"offset":true}).optional()
 })
@@ -89,6 +95,42 @@ export const DeleteClientsIdParams = zod.object({
 
 export const DeleteClientsIdResponse = zod.void()
 
+/**
+ * Returns invoices belonging to the given client, ordered by creation date descending, each including subtotal.
+ * @summary List all invoices for a client
+ */
+export const GetClientsIdInvoicesParams = zod.object({
+  "id": zod.number()
+})
+
+export const GetClientsIdInvoicesQueryParams = zod.object({
+  "status": zod.enum(['draft', 'sent', 'paid']).optional().describe('Filter by invoice status')
+})
+
+export const getClientsIdInvoicesResponseCurrencyMin = 3;
+export const getClientsIdInvoicesResponseCurrencyMax = 3;
+
+export const getClientsIdInvoicesResponseTaxRateMin = 0;
+export const getClientsIdInvoicesResponseTaxRateMax = 100;
+
+
+
+export const GetClientsIdInvoicesResponseItem = zod.object({
+  "id": zod.number().optional(),
+  "client_id": zod.number().optional(),
+  "client_name": zod.string().optional(),
+  "status": zod.enum(['draft', 'sent', 'paid']).optional(),
+  "currency": zod.string().min(getClientsIdInvoicesResponseCurrencyMin).max(getClientsIdInvoicesResponseCurrencyMax).optional().describe('ISO 4217 currency code'),
+  "issue_date": zod.string().date().optional(),
+  "due_date": zod.string().date().optional(),
+  "tax_rate": zod.number().min(getClientsIdInvoicesResponseTaxRateMin).max(getClientsIdInvoicesResponseTaxRateMax).optional(),
+  "memo": zod.string().nullish(),
+  "subtotal": zod.number().optional(),
+  "created_at": zod.string().datetime({"offset":true}).optional(),
+  "updated_at": zod.string().datetime({"offset":true}).optional()
+})
+export const GetClientsIdInvoicesResponse = zod.array(GetClientsIdInvoicesResponseItem)
+
 // Inferred TypeScript types
 export type GetClientsResponseItem = zod.infer<typeof GetClientsResponseItem>
 export type GetClientsResponse = zod.infer<typeof GetClientsResponse>
@@ -101,3 +143,7 @@ export type PutClientsIdBody = zod.infer<typeof PutClientsIdBody>
 export type PutClientsIdResponse = zod.infer<typeof PutClientsIdResponse>
 export type DeleteClientsIdParams = zod.infer<typeof DeleteClientsIdParams>
 export type DeleteClientsIdResponse = zod.infer<typeof DeleteClientsIdResponse>
+export type GetClientsIdInvoicesParams = zod.infer<typeof GetClientsIdInvoicesParams>
+export type GetClientsIdInvoicesQueryParams = zod.infer<typeof GetClientsIdInvoicesQueryParams>
+export type GetClientsIdInvoicesResponseItem = zod.infer<typeof GetClientsIdInvoicesResponseItem>
+export type GetClientsIdInvoicesResponse = zod.infer<typeof GetClientsIdInvoicesResponse>
